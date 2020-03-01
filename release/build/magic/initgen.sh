@@ -52,7 +52,7 @@ fi
 
 wait ${!}
 
-chmod 666 /tmp/glitch-settings.conf
+chmod 0755 /tmp/glitch-settings.conf
 
 . /tmp/glitch-settings.conf
 
@@ -65,7 +65,7 @@ null="abc"
 if [ "$PERMISSIVE" == "1" ]; then
   echo "cmdline = console=ttyHSL0,115200,n8 androidboot.hardware=flo user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3 vmalloc=340M enforcing=0 androidboot.selinux=permissive" $l2_opt $vdd_uv $null >> /tmp/cmdline.cfg
 else
-  echo "cmdline = console=ttyHSL0,115200,n8 androidboot.hardware=flo user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3 vmalloc=340M enforcing=1 androidboot.selinux=enforcing" $l2_opt $vdd_uv $null >> /tmp/cmdline.cfg
+  echo "cmdline = console=ttyHSL0,115200,n8 androidboot.hardware=flo user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3 vmalloc=340M" $l2_opt $vdd_uv $null >> /tmp/cmdline.cfg
 fi
 
 ####################################################################
@@ -85,6 +85,9 @@ echo "write /sys/kernel/mm/ksm/pages_to_scan 256" >> $INIT
 echo "write /sys/kernel/mm/ksm/deferred_timer 1" >> $INIT
 echo "write /sys/kernel/mm/ksm/run 1" >> $INIT
 echo "" >> $INIT
+
+#ParrotMod
+echo "write /sys/android_touch/parrot_mod" $PARROT >> $INIT
 
 #S2W
 echo "write /sys/android_touch/sweep2wake" $S2W >> $INIT
@@ -165,8 +168,6 @@ fi
 #Backlight dimmer
   echo "write /sys/module/msm_fb/parameters/backlight_dimmer $BLD" >> $INIT
 
-####################################################################
-
 #HOTPLUGDRV
 if [ "$HOTPLUGDRV" == "1" ]; then
   echo "write /sys/module/msm_mpdecision/parameters/enabled 0" >> $INIT
@@ -184,9 +185,16 @@ else
   echo "write /sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/pwrscale/trustzone/governor ondemand" >> $INIT
 fi
 
+####################################################################
+
 echo "" >> $INIT
 echo "on property:sys.boot_completed=1" >> $INIT
+echo "    start userinit" >> $INIT
+echo "    start synapse" >> $INIT
+echo "    start glitch" >> $INIT
 echo "" >> $INIT
+
+####################################################################
 
 #read-ahead
 if [ "$READAHEAD" == "2" ]; then
